@@ -3,169 +3,335 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Habit Tracker</title>
+  <title>Daily Habit Tracker</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       background: #f7f4ef;
-      margin: 0;
-      padding: 30px;
-      color: #333;
+      color: #222;
+      padding: 16px;
     }
 
-    .container {
-      max-width: 700px;
+    .app {
+      max-width: 480px;
       margin: auto;
-      background: white;
-      padding: 25px;
-      border-radius: 16px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
     h1 {
       text-align: center;
-      color: #4b7f52;
+      color: #3f7d4c;
+      margin-bottom: 5px;
     }
 
-    .add-habit {
+    .date {
+      text-align: center;
+      color: #777;
+      margin-bottom: 20px;
+    }
+
+    .progress-box {
+      margin-bottom: 20px;
+    }
+
+    .progress-text {
       display: flex;
-      gap: 10px;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e6e6e6;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #3f7d4c;
+      transition: 0.3s;
+    }
+
+    .add-box {
+      display: flex;
+      gap: 8px;
       margin-bottom: 20px;
     }
 
     input {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
+      font-size: 16px;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 12px;
     }
 
     button {
-      padding: 12px 16px;
       border: none;
-      border-radius: 8px;
-      background: #4b7f52;
-      color: white;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
       cursor: pointer;
     }
 
+    .add-btn {
+      background: #3f7d4c;
+      color: white;
+    }
+
     .habit {
+      background: #fafafa;
+      border: 1px solid #eee;
+      padding: 14px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+    }
+
+    .habit-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px;
-      border-bottom: 1px solid #eee;
+      gap: 10px;
     }
 
     .habit-name {
       font-weight: bold;
+      font-size: 17px;
+      word-break: break-word;
     }
 
-    .streak {
-      font-size: 14px;
-      color: #777;
+    .habit-info {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
     }
 
-    .delete {
+    .actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .complete-btn {
+      flex: 1;
+      background: #3f7d4c;
+      color: white;
+    }
+
+    .edit-btn {
+      background: #e9d8a6;
+      color: #333;
+    }
+
+    .delete-btn {
       background: #d9534f;
-      margin-left: 10px;
+      color: white;
     }
 
     .done {
+      opacity: 0.65;
+    }
+
+    .done .habit-name {
       text-decoration: line-through;
-      color: #888;
+    }
+
+    .history {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+      background: #f7f4ef;
+      padding: 12px;
+      border-radius: 12px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>My Habit Tracker</h1>
+  <div class="app">
+    <h1>Daily Habit Tracker</h1>
+    <div class="date" id="todayDate"></div>
 
-    <div class="add-habit">
-      <input id="habitInput" type="text" placeholder="Add a new habit..." />
-      <button onclick="addHabit()">Add</button>
+    <div class="progress-box">
+      <div class="progress-text">
+        <span>Today's Progress</span>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="add-box">
+      <input id="habitInput" placeholder="Add daily habit..." />
+      <button class="add-btn" onclick="addHabit()">Add</button>
     </div>
 
     <div id="habitList"></div>
+
+    <div class="history">
+      <strong>Daily Tracking:</strong>
+      <div id="dailyStats"></div>
+    </div>
   </div>
 
   <script>
-    let habits = JSON.parse(localStorage.getItem("habits")) || [];
+    const today = new Date().toDateString();
+    document.getElementById("todayDate").innerText = today;
 
-    function saveHabits() {
+    let habits = JSON.parse(localStorage.getItem("habits")) || [];
+    let history = JSON.parse(localStorage.getItem("habitHistory")) || {};
+
+    function saveData() {
       localStorage.setItem("habits", JSON.stringify(habits));
+      localStorage.setItem("habitHistory", JSON.stringify(history));
+    }
+
+    function resetDailyStatus() {
+      habits.forEach(habit => {
+        if (habit.lastDate !== today) {
+          habit.completed = false;
+          habit.lastDate = today;
+        }
+      });
+      saveData();
     }
 
     function addHabit() {
       const input = document.getElementById("habitInput");
       const name = input.value.trim();
 
-      if (name === "") return;
+      if (!name) return;
 
       habits.push({
-        name: name,
+        name,
         completed: false,
         streak: 0,
-        lastCompleted: null
+        totalCompleted: 0,
+        lastDate: today
       });
 
       input.value = "";
-      saveHabits();
-      renderHabits();
+      saveData();
+      render();
     }
 
-    function toggleHabit(index) {
-      const today = new Date().toDateString();
+    function completeHabit(index) {
       const habit = habits[index];
 
       habit.completed = !habit.completed;
 
-      if (habit.completed && habit.lastCompleted !== today) {
+      if (habit.completed) {
         habit.streak++;
-        habit.lastCompleted = today;
-      }
-
-      if (!habit.completed && habit.lastCompleted === today) {
+        habit.totalCompleted++;
+      } else {
         habit.streak = Math.max(0, habit.streak - 1);
-        habit.lastCompleted = null;
+        habit.totalCompleted = Math.max(0, habit.totalCompleted - 1);
       }
 
-      saveHabits();
-      renderHabits();
+      updateTodayHistory();
+      saveData();
+      render();
+    }
+
+    function editHabit(index) {
+      const newName = prompt("Edit habit:", habits[index].name);
+      if (newName && newName.trim()) {
+        habits[index].name = newName.trim();
+        saveData();
+        render();
+      }
     }
 
     function deleteHabit(index) {
-      habits.splice(index, 1);
-      saveHabits();
-      renderHabits();
+      if (confirm("Delete this habit?")) {
+        habits.splice(index, 1);
+        updateTodayHistory();
+        saveData();
+        render();
+      }
     }
 
-    function renderHabits() {
+    function updateTodayHistory() {
+      const completed = habits.filter(h => h.completed).length;
+      history[today] = {
+        completed,
+        total: habits.length,
+        percent: habits.length ? Math.round((completed / habits.length) * 100) : 0
+      };
+    }
+
+    function render() {
+      resetDailyStatus();
+
       const list = document.getElementById("habitList");
       list.innerHTML = "";
 
       habits.forEach((habit, index) => {
         const div = document.createElement("div");
-        div.className = "habit";
+        div.className = "habit " + (habit.completed ? "done" : "");
 
         div.innerHTML = `
-          <div>
-            <div class="habit-name ${habit.completed ? "done" : ""}">
-              ${habit.name}
+          <div class="habit-top">
+            <div>
+              <div class="habit-name">${habit.name}</div>
+              <div class="habit-info">
+                🔥 Streak: ${habit.streak} day(s) · ✅ Total: ${habit.totalCompleted}
+              </div>
             </div>
-            <div class="streak">🔥 Streak: ${habit.streak} day(s)</div>
           </div>
-          <div>
-            <input type="checkbox" ${habit.completed ? "checked" : ""} onchange="toggleHabit(${index})" />
-            <button class="delete" onclick="deleteHabit(${index})">Delete</button>
+
+          <div class="actions">
+            <button class="complete-btn" onclick="completeHabit(${index})">
+              ${habit.completed ? "Undo" : "Done"}
+            </button>
+            <button class="edit-btn" onclick="editHabit(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteHabit(${index})">Delete</button>
           </div>
         `;
 
         list.appendChild(div);
       });
+
+      updateTodayHistory();
+      updateProgress();
+      showStats();
     }
 
-    renderHabits();
+    function updateProgress() {
+      const completed = habits.filter(h => h.completed).length;
+      const total = habits.length;
+      const percent = total ? Math.round((completed / total) * 100) : 0;
+
+      document.getElementById("progressText").innerText = percent + "%";
+      document.getElementById("progressFill").style.width = percent + "%";
+    }
+
+    function showStats() {
+      const stats = document.getElementById("dailyStats");
+      const recentDays = Object.keys(history).slice(-7).reverse();
+
+      if (recentDays.length === 0) {
+        stats.innerHTML = "No data yet.";
+        return;
+      }
+
+      stats.innerHTML = recentDays.map(day => {
+        const data = history[day];
+        return `${day}: ${data.completed}/${data.total} completed (${data.percent}%)`;
+      }).join("<br>");
+    }
+
+    render();
   </script>
 </body>
 </html>
