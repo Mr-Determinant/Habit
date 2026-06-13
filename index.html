@@ -4,183 +4,200 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daily Habit Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f7f4ef;
-      color: #222;
-      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #f8f4ee, #eef5ef);
+      color: #1f2933;
+      padding: 14px;
     }
 
     .app {
-      max-width: 480px;
+      max-width: 520px;
       margin: auto;
-      background: #fff;
-      padding: 20px;
+      padding-bottom: 30px;
+    }
+
+    .header {
+      background: #2f6f46;
+      color: white;
+      padding: 24px 18px;
+      border-radius: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      padding: 16px;
       border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.07);
     }
 
-    h1 {
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
       text-align: center;
-      color: #3f7d4c;
-      margin-bottom: 5px;
     }
 
-    .date {
-      text-align: center;
-      color: #777;
-      margin-bottom: 20px;
+    .stat {
+      background: #f6f7f4;
+      border-radius: 16px;
+      padding: 12px 8px;
     }
 
-    .progress-box {
-      margin-bottom: 20px;
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      color: #2f6f46;
     }
 
-    .progress-text {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      margin-bottom: 6px;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 12px;
-      background: #e6e6e6;
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: #3f7d4c;
-      transition: 0.3s;
+    .stat span {
+      font-size: 12px;
+      color: #667085;
     }
 
     .add-box {
       display: flex;
       gap: 8px;
-      margin-bottom: 20px;
     }
 
     input {
       flex: 1;
       padding: 14px;
       font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 14px;
     }
 
     button {
       border: none;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    .add-btn {
-      background: #3f7d4c;
-      color: white;
-    }
-
-    .habit {
-      background: #fafafa;
-      border: 1px solid #eee;
-      padding: 14px;
       border-radius: 14px;
-      margin-bottom: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
     }
 
-    .habit-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .habit-name {
-      font-weight: bold;
-      font-size: 17px;
-      word-break: break-word;
-    }
-
-    .habit-info {
-      font-size: 13px;
-      color: #666;
-      margin-top: 6px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 12px;
-    }
-
-    .complete-btn {
-      flex: 1;
-      background: #3f7d4c;
+    .add-btn, .done-btn {
+      background: #2f6f46;
       color: white;
     }
 
     .edit-btn {
-      background: #e9d8a6;
+      background: #f0d98c;
       color: #333;
     }
 
     .delete-btn {
-      background: #d9534f;
+      background: #d94f4f;
       color: white;
     }
 
-    .done {
-      opacity: 0.65;
+    .habit {
+      border: 1px solid #edf0f2;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #fcfcfc;
     }
 
-    .done .habit-name {
+    .habit.done {
+      background: #eef8f0;
+      opacity: 0.85;
+    }
+
+    .habit-name {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .habit.done .habit-name {
       text-decoration: line-through;
     }
 
-    .history {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #555;
-      background: #f7f4ef;
-      padding: 12px;
-      border-radius: 12px;
+    .habit-info {
+      color: #667085;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    canvas {
+      max-height: 240px;
+    }
+
+    .small-title {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #344054;
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <h1>Daily Habit Tracker</h1>
-    <div class="date" id="todayDate"></div>
+    <div class="header">
+      <h1>Daily Habit Tracker</h1>
+      <p id="todayDate"></p>
+    </div>
 
-    <div class="progress-box">
-      <div class="progress-text">
-        <span>Today's Progress</span>
-        <span id="progressText">0%</span>
+    <div class="card summary">
+      <div class="stat">
+        <strong id="completedCount">0</strong>
+        <span>Done Today</span>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
+      <div class="stat">
+        <strong id="totalCount">0</strong>
+        <span>Total Habits</span>
+      </div>
+      <div class="stat">
+        <strong id="percentCount">0%</strong>
+        <span>Progress</span>
       </div>
     </div>
 
-    <div class="add-box">
-      <input id="habitInput" placeholder="Add daily habit..." />
-      <button class="add-btn" onclick="addHabit()">Add</button>
+    <div class="card">
+      <div class="add-box">
+        <input id="habitInput" placeholder="Add a daily habit..." />
+        <button class="add-btn" onclick="addHabit()">Add</button>
+      </div>
     </div>
 
-    <div id="habitList"></div>
+    <div class="card">
+      <div class="small-title">Today's Habits</div>
+      <div id="habitList"></div>
+    </div>
 
-    <div class="history">
-      <strong>Daily Tracking:</strong>
-      <div id="dailyStats"></div>
+    <div class="card">
+      <div class="small-title">Weekly Progress</div>
+      <canvas id="weeklyChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="small-title">Habit Performance</div>
+      <canvas id="habitChart"></canvas>
     </div>
   </div>
 
@@ -190,6 +207,9 @@
 
     let habits = JSON.parse(localStorage.getItem("habits")) || [];
     let history = JSON.parse(localStorage.getItem("habitHistory")) || {};
+
+    let weeklyChart;
+    let habitChart;
 
     function saveData() {
       localStorage.setItem("habits", JSON.stringify(habits));
@@ -225,9 +245,8 @@
       render();
     }
 
-    function completeHabit(index) {
+    function toggleHabit(index) {
       const habit = habits[index];
-
       habit.completed = !habit.completed;
 
       if (habit.completed) {
@@ -244,9 +263,9 @@
     }
 
     function editHabit(index) {
-      const newName = prompt("Edit habit:", habits[index].name);
-      if (newName && newName.trim()) {
-        habits[index].name = newName.trim();
+      const updated = prompt("Edit habit:", habits[index].name);
+      if (updated && updated.trim()) {
+        habits[index].name = updated.trim();
         saveData();
         render();
       }
@@ -263,37 +282,32 @@
 
     function updateTodayHistory() {
       const completed = habits.filter(h => h.completed).length;
+      const total = habits.length;
       history[today] = {
         completed,
-        total: habits.length,
-        percent: habits.length ? Math.round((completed / habits.length) * 100) : 0
+        total,
+        percent: total ? Math.round((completed / total) * 100) : 0
       };
     }
 
-    function render() {
-      resetDailyStatus();
-
+    function renderHabits() {
       const list = document.getElementById("habitList");
       list.innerHTML = "";
+
+      if (habits.length === 0) {
+        list.innerHTML = "<p style='color:#667085;'>No habits yet. Add your first one above.</p>";
+        return;
+      }
 
       habits.forEach((habit, index) => {
         const div = document.createElement("div");
         div.className = "habit " + (habit.completed ? "done" : "");
 
         div.innerHTML = `
-          <div class="habit-top">
-            <div>
-              <div class="habit-name">${habit.name}</div>
-              <div class="habit-info">
-                🔥 Streak: ${habit.streak} day(s) · ✅ Total: ${habit.totalCompleted}
-              </div>
-            </div>
-          </div>
-
+          <div class="habit-name">${habit.name}</div>
+          <div class="habit-info">🔥 Streak: ${habit.streak} days · ✅ Total completed: ${habit.totalCompleted}</div>
           <div class="actions">
-            <button class="complete-btn" onclick="completeHabit(${index})">
-              ${habit.completed ? "Undo" : "Done"}
-            </button>
+            <button class="done-btn" onclick="toggleHabit(${index})">${habit.completed ? "Undo" : "Done"}</button>
             <button class="edit-btn" onclick="editHabit(${index})">Edit</button>
             <button class="delete-btn" onclick="deleteHabit(${index})">Delete</button>
           </div>
@@ -301,34 +315,89 @@
 
         list.appendChild(div);
       });
-
-      updateTodayHistory();
-      updateProgress();
-      showStats();
     }
 
-    function updateProgress() {
+    function updateSummary() {
       const completed = habits.filter(h => h.completed).length;
       const total = habits.length;
       const percent = total ? Math.round((completed / total) * 100) : 0;
 
-      document.getElementById("progressText").innerText = percent + "%";
-      document.getElementById("progressFill").style.width = percent + "%";
+      document.getElementById("completedCount").innerText = completed;
+      document.getElementById("totalCount").innerText = total;
+      document.getElementById("percentCount").innerText = percent + "%";
     }
 
-    function showStats() {
-      const stats = document.getElementById("dailyStats");
-      const recentDays = Object.keys(history).slice(-7).reverse();
+    function getLast7Days() {
+      const days = [];
 
-      if (recentDays.length === 0) {
-        stats.innerHTML = "No data yet.";
-        return;
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        days.push(date.toDateString());
       }
 
-      stats.innerHTML = recentDays.map(day => {
-        const data = history[day];
-        return `${day}: ${data.completed}/${data.total} completed (${data.percent}%)`;
-      }).join("<br>");
+      return days;
+    }
+
+    function renderCharts() {
+      const last7 = getLast7Days();
+
+      const weeklyLabels = last7.map(day =>
+        new Date(day).toLocaleDateString("en-US", { weekday: "short" })
+      );
+
+      const weeklyData = last7.map(day => history[day]?.percent || 0);
+
+      if (weeklyChart) weeklyChart.destroy();
+      weeklyChart = new Chart(document.getElementById("weeklyChart"), {
+        type: "line",
+        data: {
+          labels: weeklyLabels,
+          datasets: [{
+            label: "Completion %",
+            data: weeklyData,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, max: 100 }
+          }
+        }
+      });
+
+      if (habitChart) habitChart.destroy();
+      habitChart = new Chart(document.getElementById("habitChart"), {
+        type: "bar",
+        data: {
+          labels: habits.map(h => h.name),
+          datasets: [{
+            label: "Total Completed",
+            data: habits.map(h => h.totalCompleted),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function render() {
+      resetDailyStatus();
+      updateTodayHistory();
+      renderHabits();
+      updateSummary();
+      renderCharts();
+      saveData();
     }
 
     render();
