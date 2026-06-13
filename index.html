@@ -1,406 +1,571 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Habit Tracker</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stock Market Analyst</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(135deg, #f8f4ee, #eef5ef);
-      color: #1f2933;
-      padding: 14px;
-    }
+<style>
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --green: #16a34a;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --border: #e5e7eb;
+}
 
-    .app {
-      max-width: 520px;
-      margin: auto;
-      padding-bottom: 30px;
-    }
+body.dark {
+  --bg: #0f172a;
+  --card: #111827;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+  --border: #1f2937;
+}
 
-    .header {
-      background: #2f6f46;
-      color: white;
-      padding: 24px 18px;
-      border-radius: 24px;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    }
+* { box-sizing: border-box; }
 
-    .header h1 {
-      margin: 0;
-      font-size: 28px;
-    }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 14px;
+}
 
-    .header p {
-      margin: 8px 0 0;
-      opacity: 0.9;
-    }
+.app {
+  max-width: 1100px;
+  margin: auto;
+}
 
-    .card {
-      background: white;
-      padding: 16px;
-      border-radius: 20px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.07);
-    }
+.header {
+  background: linear-gradient(135deg, #0f766e, #1d4ed8);
+  color: white;
+  padding: 24px;
+  border-radius: 24px;
+  margin-bottom: 16px;
+}
 
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      text-align: center;
-    }
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+}
 
-    .stat {
-      background: #f6f7f4;
-      border-radius: 16px;
-      padding: 12px 8px;
-    }
+.header p {
+  margin: 8px 0 0;
+  opacity: .9;
+}
 
-    .stat strong {
-      display: block;
-      font-size: 22px;
-      color: #2f6f46;
-    }
+.grid {
+  display: grid;
+  gap: 14px;
+}
 
-    .stat span {
-      font-size: 12px;
-      color: #667085;
-    }
+@media (min-width: 800px) {
+  .grid-2 {
+    grid-template-columns: 1.4fr .8fr;
+  }
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 
-    .add-box {
-      display: flex;
-      gap: 8px;
-    }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+}
 
-    input {
-      flex: 1;
-      padding: 14px;
-      font-size: 16px;
-      border: 1px solid #d0d5dd;
-      border-radius: 14px;
-    }
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-    button {
-      border: none;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 14px;
-      cursor: pointer;
-      font-weight: 600;
-    }
+input, select {
+  flex: 1;
+  min-width: 140px;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 16px;
+}
 
-    .add-btn, .done-btn {
-      background: #2f6f46;
-      color: white;
-    }
+button {
+  border: none;
+  padding: 13px 15px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
 
-    .edit-btn {
-      background: #f0d98c;
-      color: #333;
-    }
+.primary { background: var(--blue); color: white; }
+.secondary { background: #e5e7eb; color: #111827; }
+.danger { background: var(--red); color: white; }
 
-    .delete-btn {
-      background: #d94f4f;
-      color: white;
-    }
+.stat strong {
+  display: block;
+  font-size: 24px;
+}
 
-    .habit {
-      border: 1px solid #edf0f2;
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 12px;
-      background: #fcfcfc;
-    }
+.stat span {
+  color: var(--muted);
+  font-size: 13px;
+}
 
-    .habit.done {
-      background: #eef8f0;
-      opacity: 0.85;
-    }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
 
-    .habit-name {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
+.badge {
+  display: inline-block;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
 
-    .habit.done .habit-name {
-      text-decoration: line-through;
-    }
+.bullish { background: #dcfce7; color: #166534; }
+.neutral { background: #fef3c7; color: #92400e; }
+.bearish { background: #fee2e2; color: #991b1b; }
 
-    .habit-info {
-      color: #667085;
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
+.small {
+  color: var(--muted);
+  font-size: 13px;
+}
 
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
+.watch-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
 
-    canvas {
-      max-height: 240px;
-    }
+canvas {
+  max-height: 330px;
+}
 
-    .small-title {
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: #344054;
-    }
-  </style>
+.range-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.range-buttons button {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 9px 12px;
+}
+
+.disclaimer {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+#error {
+  color: var(--red);
+  font-weight: 700;
+}
+</style>
 </head>
+
 <body>
-  <div class="app">
-    <div class="header">
-      <h1>Daily Habit Tracker</h1>
-      <p id="todayDate"></p>
-    </div>
+<div class="app">
 
-    <div class="card summary">
-      <div class="stat">
-        <strong id="completedCount">0</strong>
-        <span>Done Today</span>
-      </div>
-      <div class="stat">
-        <strong id="totalCount">0</strong>
-        <span>Total Habits</span>
-      </div>
-      <div class="stat">
-        <strong id="percentCount">0%</strong>
-        <span>Progress</span>
-      </div>
-    </div>
+  <div class="header">
+    <h1>Stock Market Analyst</h1>
+    <p>Live/delayed stock dashboard with technical analysis, scoring, charts, and watchlist.</p>
+  </div>
 
-    <div class="card">
-      <div class="add-box">
-        <input id="habitInput" placeholder="Add a daily habit..." />
-        <button class="add-btn" onclick="addHabit()">Add</button>
-      </div>
+  <div class="card">
+    <div class="controls">
+      <input id="apiKey" placeholder="Paste Alpha Vantage API key here" />
+      <button class="secondary" onclick="saveApiKey()">Save Key</button>
+      <button class="secondary" onclick="toggleDark()">Dark Mode</button>
     </div>
+    <p class="small">Get a free Alpha Vantage API key, paste it above, then search a ticker.</p>
+  </div>
 
-    <div class="card">
-      <div class="small-title">Today's Habits</div>
-      <div id="habitList"></div>
+  <div class="card">
+    <div class="controls">
+      <input id="tickerInput" placeholder="Enter ticker: AAPL, TSLA, NVDA..." />
+      <button class="primary" onclick="loadStock()">Analyze</button>
+      <button class="secondary" onclick="addToWatchlist()">+ Watchlist</button>
     </div>
+    <p id="error"></p>
+  </div>
 
-    <div class="card">
-      <div class="small-title">Weekly Progress</div>
-      <canvas id="weeklyChart"></canvas>
+  <div class="grid grid-3">
+    <div class="card stat">
+      <span>Current Price</span>
+      <strong id="price">--</strong>
     </div>
-
-    <div class="card">
-      <div class="small-title">Habit Performance</div>
-      <canvas id="habitChart"></canvas>
+    <div class="card stat">
+      <span>Daily Change</span>
+      <strong id="change">--</strong>
+    </div>
+    <div class="card stat">
+      <span>Analyst Score</span>
+      <strong id="score">--</strong>
     </div>
   </div>
 
-  <script>
-    const today = new Date().toDateString();
-    document.getElementById("todayDate").innerText = today;
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Price Chart</h3>
+      <div class="range-buttons">
+        <button onclick="setRange('1M')">1M</button>
+        <button onclick="setRange('6M')">6M</button>
+        <button onclick="setRange('1Y')">1Y</button>
+      </div>
+      <canvas id="priceChart"></canvas>
+    </div>
 
-    let habits = JSON.parse(localStorage.getItem("habits")) || [];
-    let history = JSON.parse(localStorage.getItem("habitHistory")) || {};
+    <div class="card">
+      <h3>Stock Overview</h3>
+      <p><strong>Ticker:</strong> <span id="tickerName">--</span></p>
+      <p><strong>Previous Close:</strong> <span id="prevClose">--</span></p>
+      <p><strong>Volume:</strong> <span id="volume">--</span></p>
+      <p><strong>Market Cap:</strong> <span id="marketCap">--</span></p>
+      <p><strong>52 Week High:</strong> <span id="high52">--</span></p>
+      <p><strong>52 Week Low:</strong> <span id="low52">--</span></p>
+    </div>
+  </div>
 
-    let weeklyChart;
-    let habitChart;
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Technical Analysis</h3>
+      <p><strong>Signal:</strong> <span id="signal" class="badge neutral">--</span></p>
+      <p><strong>RSI:</strong> <span id="rsi">--</span></p>
+      <p><strong>20-Day MA:</strong> <span id="ma20">--</span></p>
+      <p><strong>50-Day MA:</strong> <span id="ma50">--</span></p>
+      <p><strong>Support:</strong> <span id="support">--</span></p>
+      <p><strong>Resistance:</strong> <span id="resistance">--</span></p>
+    </div>
 
-    function saveData() {
-      localStorage.setItem("habits", JSON.stringify(habits));
-      localStorage.setItem("habitHistory", JSON.stringify(history));
+    <div class="card">
+      <h3>Risk Analysis</h3>
+      <p><strong>Trend Score:</strong> <span id="trendScore">--</span></p>
+      <p><strong>Momentum Score:</strong> <span id="momentumScore">--</span></p>
+      <p><strong>Volatility Risk:</strong> <span id="riskLevel">--</span></p>
+      <p><strong>Volume Confirmation:</strong> <span id="volumeConfirm">--</span></p>
+      <canvas id="volumeChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Watchlist</h3>
+    <div id="watchlist"></div>
+  </div>
+
+  <div class="card disclaimer">
+    <strong>Educational disclaimer:</strong> This website is for learning and informational purposes only.
+    It is not financial advice, investment advice, or a recommendation to buy or sell any stock.
+    Always do your own research or speak with a licensed financial professional.
+  </div>
+
+</div>
+
+<script>
+let apiKey = localStorage.getItem("stockApiKey") || "";
+let currentTicker = "AAPL";
+let currentRange = "6M";
+let dailyData = [];
+let priceChart, volumeChart;
+
+document.getElementById("apiKey").value = apiKey;
+
+function saveApiKey() {
+  apiKey = document.getElementById("apiKey").value.trim();
+  localStorage.setItem("stockApiKey", apiKey);
+  alert("API key saved.");
+}
+
+function toggleDark() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+
+function formatMoney(num) {
+  if (!num || isNaN(num)) return "--";
+  return "$" + Number(num).toFixed(2);
+}
+
+function formatLarge(num) {
+  if (!num || isNaN(num)) return "--";
+  num = Number(num);
+  if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
+  if (num >= 1e9) return "$" + (num / 1e9).toFixed(2) + "B";
+  if (num >= 1e6) return "$" + (num / 1e6).toFixed(2) + "M";
+  return "$" + num.toLocaleString();
+}
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  return await res.json();
+}
+
+async function loadStock(tickerFromWatchlist) {
+  document.getElementById("error").innerText = "";
+
+  if (!apiKey) {
+    document.getElementById("error").innerText = "Please paste and save your Alpha Vantage API key first.";
+    return;
+  }
+
+  currentTicker = (tickerFromWatchlist || document.getElementById("tickerInput").value || "AAPL").toUpperCase().trim();
+  document.getElementById("tickerInput").value = currentTicker;
+
+  try {
+    const quoteURL = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${currentTicker}&apikey=${apiKey}`;
+    const dailyURL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${currentTicker}&outputsize=full&apikey=${apiKey}`;
+    const overviewURL = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${currentTicker}&apikey=${apiKey}`;
+
+    const [quote, daily, overview] = await Promise.all([
+      fetchJSON(quoteURL),
+      fetchJSON(dailyURL),
+      fetchJSON(overviewURL)
+    ]);
+
+    if (quote.Note || daily.Note || overview.Note) {
+      throw new Error("API limit reached. Try again later or use fewer searches.");
     }
 
-    function resetDailyStatus() {
-      habits.forEach(habit => {
-        if (habit.lastDate !== today) {
-          habit.completed = false;
-          habit.lastDate = today;
-        }
-      });
-      saveData();
+    if (!quote["Global Quote"] || !daily["Time Series (Daily)"]) {
+      throw new Error("Ticker not found or API returned no data.");
     }
 
-    function addHabit() {
-      const input = document.getElementById("habitInput");
-      const name = input.value.trim();
+    updateOverview(quote["Global Quote"], overview);
+    dailyData = parseDailyData(daily["Time Series (Daily)"]);
+    analyzeStock();
+    renderCharts();
+  } catch (err) {
+    document.getElementById("error").innerText = err.message;
+  }
+}
 
-      if (!name) return;
+function updateOverview(q, overview) {
+  const price = Number(q["05. price"]);
+  const change = Number(q["09. change"]);
+  const percent = q["10. change percent"];
 
-      habits.push({
-        name,
-        completed: false,
-        streak: 0,
-        totalCompleted: 0,
-        lastDate: today
-      });
+  document.getElementById("tickerName").innerText = currentTicker;
+  document.getElementById("price").innerText = formatMoney(price);
 
-      input.value = "";
-      saveData();
-      render();
+  const changeEl = document.getElementById("change");
+  changeEl.innerText = `${formatMoney(change)} (${percent})`;
+  changeEl.className = change >= 0 ? "positive" : "negative";
+
+  document.getElementById("prevClose").innerText = formatMoney(q["08. previous close"]);
+  document.getElementById("volume").innerText = Number(q["06. volume"]).toLocaleString();
+
+  document.getElementById("marketCap").innerText = formatLarge(overview.MarketCapitalization);
+  document.getElementById("high52").innerText = formatMoney(overview["52WeekHigh"]);
+  document.getElementById("low52").innerText = formatMoney(overview["52WeekLow"]);
+}
+
+function parseDailyData(raw) {
+  return Object.keys(raw)
+    .map(date => ({
+      date,
+      close: Number(raw[date]["4. close"]),
+      high: Number(raw[date]["2. high"]),
+      low: Number(raw[date]["3. low"]),
+      volume: Number(raw[date]["5. volume"])
+    }))
+    .reverse();
+}
+
+function average(arr) {
+  return arr.reduce((a,b) => a + b, 0) / arr.length;
+}
+
+function movingAverage(data, period) {
+  return data.map((_, i) => {
+    if (i < period - 1) return null;
+    return average(data.slice(i - period + 1, i + 1).map(d => d.close));
+  });
+}
+
+function calculateRSI(data, period = 14) {
+  if (data.length < period + 1) return 50;
+
+  let gains = 0, losses = 0;
+  const recent = data.slice(-period - 1);
+
+  for (let i = 1; i < recent.length; i++) {
+    const diff = recent[i].close - recent[i - 1].close;
+    if (diff >= 0) gains += diff;
+    else losses -= diff;
+  }
+
+  if (losses === 0) return 100;
+  const rs = gains / losses;
+  return 100 - (100 / (1 + rs));
+}
+
+function analyzeStock() {
+  const closes = dailyData.map(d => d.close);
+  const latest = dailyData[dailyData.length - 1];
+  const ma20Arr = movingAverage(dailyData, 20);
+  const ma50Arr = movingAverage(dailyData, 50);
+
+  const ma20 = ma20Arr[ma20Arr.length - 1];
+  const ma50 = ma50Arr[ma50Arr.length - 1];
+  const rsi = calculateRSI(dailyData);
+
+  const recent = dailyData.slice(-30);
+  const support = Math.min(...recent.map(d => d.low));
+  const resistance = Math.max(...recent.map(d => d.high));
+
+  const avgVolume = average(recent.map(d => d.volume));
+  const volumeConfirm = latest.volume > avgVolume ? "Strong volume" : "Weak/normal volume";
+
+  let trendScore = latest.close > ma20 ? 30 : 10;
+  trendScore += latest.close > ma50 ? 30 : 10;
+
+  let momentumScore = rsi > 50 && rsi < 70 ? 25 : rsi >= 70 ? 15 : 10;
+  let volumeScore = latest.volume > avgVolume ? 15 : 8;
+
+  const totalScore = Math.min(100, trendScore + momentumScore + volumeScore);
+
+  let signal = "Neutral";
+  let signalClass = "neutral";
+
+  if (totalScore >= 70) {
+    signal = "Bullish";
+    signalClass = "bullish";
+  } else if (totalScore <= 45) {
+    signal = "Bearish";
+    signalClass = "bearish";
+  }
+
+  const volatility = ((resistance - support) / latest.close) * 100;
+  const risk = volatility > 20 ? "High" : volatility > 10 ? "Medium" : "Low";
+
+  document.getElementById("score").innerText = totalScore + "/100";
+  document.getElementById("rsi").innerText = rsi.toFixed(1);
+  document.getElementById("ma20").innerText = formatMoney(ma20);
+  document.getElementById("ma50").innerText = formatMoney(ma50);
+  document.getElementById("support").innerText = formatMoney(support);
+  document.getElementById("resistance").innerText = formatMoney(resistance);
+  document.getElementById("trendScore").innerText = trendScore + "/60";
+  document.getElementById("momentumScore").innerText = momentumScore + "/25";
+  document.getElementById("riskLevel").innerText = risk;
+  document.getElementById("volumeConfirm").innerText = volumeConfirm;
+
+  const signalEl = document.getElementById("signal");
+  signalEl.innerText = signal;
+  signalEl.className = "badge " + signalClass;
+}
+
+function setRange(range) {
+  currentRange = range;
+  renderCharts();
+}
+
+function getRangeData() {
+  let count = 126;
+  if (currentRange === "1M") count = 22;
+  if (currentRange === "6M") count = 126;
+  if (currentRange === "1Y") count = 252;
+  return dailyData.slice(-count);
+}
+
+function renderCharts() {
+  const data = getRangeData();
+  const labels = data.map(d => d.date);
+  const prices = data.map(d => d.close);
+  const volumes = data.map(d => d.volume);
+  const ma20 = movingAverage(data, 20);
+  const ma50 = movingAverage(data, 50);
+
+  if (priceChart) priceChart.destroy();
+  priceChart = new Chart(document.getElementById("priceChart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "Close", data: prices, borderWidth: 3, tension: .25 },
+        { label: "20-Day MA", data: ma20, borderWidth: 2, tension: .25 },
+        { label: "50-Day MA", data: ma50, borderWidth: 2, tension: .25 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true } },
+      scales: { x: { ticks: { maxTicksLimit: 6 } } }
     }
+  });
 
-    function toggleHabit(index) {
-      const habit = habits[index];
-      habit.completed = !habit.completed;
-
-      if (habit.completed) {
-        habit.streak++;
-        habit.totalCompleted++;
-      } else {
-        habit.streak = Math.max(0, habit.streak - 1);
-        habit.totalCompleted = Math.max(0, habit.totalCompleted - 1);
-      }
-
-      updateTodayHistory();
-      saveData();
-      render();
+  if (volumeChart) volumeChart.destroy();
+  volumeChart = new Chart(document.getElementById("volumeChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{ label: "Volume", data: volumes }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { x: { ticks: { maxTicksLimit: 5 } } }
     }
+  });
+}
 
-    function editHabit(index) {
-      const updated = prompt("Edit habit:", habits[index].name);
-      if (updated && updated.trim()) {
-        habits[index].name = updated.trim();
-        saveData();
-        render();
-      }
-    }
+function getWatchlist() {
+  return JSON.parse(localStorage.getItem("watchlist")) || [];
+}
 
-    function deleteHabit(index) {
-      if (confirm("Delete this habit?")) {
-        habits.splice(index, 1);
-        updateTodayHistory();
-        saveData();
-        render();
-      }
-    }
+function saveWatchlist(list) {
+  localStorage.setItem("watchlist", JSON.stringify(list));
+  renderWatchlist();
+}
 
-    function updateTodayHistory() {
-      const completed = habits.filter(h => h.completed).length;
-      const total = habits.length;
-      history[today] = {
-        completed,
-        total,
-        percent: total ? Math.round((completed / total) * 100) : 0
-      };
-    }
+function addToWatchlist() {
+  const ticker = (document.getElementById("tickerInput").value || currentTicker).toUpperCase().trim();
+  if (!ticker) return;
 
-    function renderHabits() {
-      const list = document.getElementById("habitList");
-      list.innerHTML = "";
+  let list = getWatchlist();
+  if (!list.includes(ticker)) list.push(ticker);
+  saveWatchlist(list);
+}
 
-      if (habits.length === 0) {
-        list.innerHTML = "<p style='color:#667085;'>No habits yet. Add your first one above.</p>";
-        return;
-      }
+function removeFromWatchlist(ticker) {
+  saveWatchlist(getWatchlist().filter(t => t !== ticker));
+}
 
-      habits.forEach((habit, index) => {
-        const div = document.createElement("div");
-        div.className = "habit " + (habit.completed ? "done" : "");
+function renderWatchlist() {
+  const box = document.getElementById("watchlist");
+  const list = getWatchlist();
 
-        div.innerHTML = `
-          <div class="habit-name">${habit.name}</div>
-          <div class="habit-info">🔥 Streak: ${habit.streak} days · ✅ Total completed: ${habit.totalCompleted}</div>
-          <div class="actions">
-            <button class="done-btn" onclick="toggleHabit(${index})">${habit.completed ? "Undo" : "Done"}</button>
-            <button class="edit-btn" onclick="editHabit(${index})">Edit</button>
-            <button class="delete-btn" onclick="deleteHabit(${index})">Delete</button>
-          </div>
-        `;
+  if (list.length === 0) {
+    box.innerHTML = "<p class='small'>No stocks saved yet.</p>";
+    return;
+  }
 
-        list.appendChild(div);
-      });
-    }
+  box.innerHTML = list.map(ticker => `
+    <div class="watch-item">
+      <button class="secondary" onclick="loadStock('${ticker}')">${ticker}</button>
+      <button class="danger" onclick="removeFromWatchlist('${ticker}')">Delete</button>
+    </div>
+  `).join("");
+}
 
-    function updateSummary() {
-      const completed = habits.filter(h => h.completed).length;
-      const total = habits.length;
-      const percent = total ? Math.round((completed / total) * 100) : 0;
-
-      document.getElementById("completedCount").innerText = completed;
-      document.getElementById("totalCount").innerText = total;
-      document.getElementById("percentCount").innerText = percent + "%";
-    }
-
-    function getLast7Days() {
-      const days = [];
-
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        days.push(date.toDateString());
-      }
-
-      return days;
-    }
-
-    function renderCharts() {
-      const last7 = getLast7Days();
-
-      const weeklyLabels = last7.map(day =>
-        new Date(day).toLocaleDateString("en-US", { weekday: "short" })
-      );
-
-      const weeklyData = last7.map(day => history[day]?.percent || 0);
-
-      if (weeklyChart) weeklyChart.destroy();
-      weeklyChart = new Chart(document.getElementById("weeklyChart"), {
-        type: "line",
-        data: {
-          labels: weeklyLabels,
-          datasets: [{
-            label: "Completion %",
-            data: weeklyData,
-            borderWidth: 3,
-            tension: 0.35,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, max: 100 }
-          }
-        }
-      });
-
-      if (habitChart) habitChart.destroy();
-      habitChart = new Chart(document.getElementById("habitChart"), {
-        type: "bar",
-        data: {
-          labels: habits.map(h => h.name),
-          datasets: [{
-            label: "Total Completed",
-            data: habits.map(h => h.totalCompleted),
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    function render() {
-      resetDailyStatus();
-      updateTodayHistory();
-      renderHabits();
-      updateSummary();
-      renderCharts();
-      saveData();
-    }
-
-    render();
-  </script>
+renderWatchlist();
+</script>
 </body>
 </html>
