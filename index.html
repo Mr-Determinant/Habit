@@ -1,571 +1,1155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stock Market Analyst</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Stock Market Analyst</title>
 
-<style>
-:root {
-  --bg: #f4f7fb;
-  --card: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
-  --green: #16a34a;
-  --red: #dc2626;
-  --blue: #2563eb;
-  --border: #e5e7eb;
-}
+  <!-- Chart.js for local charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-body.dark {
-  --bg: #0f172a;
-  --card: #111827;
-  --text: #f9fafb;
-  --muted: #9ca3af;
-  --border: #1f2937;
-}
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: rgba(255,255,255,0.92);
+      --card-solid: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --green: #16a34a;
+      --red: #dc2626;
+      --yellow: #f59e0b;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+    }
 
-* { box-sizing: border-box; }
+    body.dark {
+      --bg: #07111f;
+      --card: rgba(15, 23, 42, 0.92);
+      --card-solid: #0f172a;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --primary: #60a5fa;
+      --primary-dark: #3b82f6;
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding: 14px;
-}
+    * { box-sizing: border-box; }
 
-.app {
-  max-width: 1100px;
-  margin: auto;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 35%),
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.16), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      padding: 14px;
+    }
 
-.header {
-  background: linear-gradient(135deg, #0f766e, #1d4ed8);
-  color: white;
-  padding: 24px;
-  border-radius: 24px;
-  margin-bottom: 16px;
-}
+    .app {
+      max-width: 1280px;
+      margin: auto;
+      padding-bottom: 40px;
+    }
 
-.header h1 {
-  margin: 0;
-  font-size: 28px;
-}
+    .hero {
+      background: linear-gradient(135deg, #0f766e, #1d4ed8 58%, #111827);
+      color: white;
+      padding: 24px;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
 
-.header p {
-  margin: 8px 0 0;
-  opacity: .9;
-}
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      right: -80px;
+      top: -90px;
+    }
 
-.grid {
-  display: grid;
-  gap: 14px;
-}
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
 
-@media (min-width: 800px) {
-  .grid-2 {
-    grid-template-columns: 1.4fr .8fr;
-  }
-  .grid-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 16px;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
-}
+    .hero p {
+      margin: 10px 0 0;
+      opacity: .9;
+      max-width: 720px;
+      line-height: 1.5;
+    }
 
-.controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+    .live-pill {
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
 
-input, select {
-  flex: 1;
-  min-width: 140px;
-  padding: 13px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  font-size: 16px;
-}
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 6px rgba(34,197,94,.18);
+    }
 
-button {
-  border: none;
-  padding: 13px 15px;
-  border-radius: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
 
-.primary { background: var(--blue); color: white; }
-.secondary { background: #e5e7eb; color: #111827; }
-.danger { background: var(--red); color: white; }
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 17px;
+      letter-spacing: -0.01em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
 
-.stat strong {
-  display: block;
-  font-size: 24px;
-}
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
 
-.stat span {
-  color: var(--muted);
-  font-size: 13px;
-}
+    @media (min-width: 760px) {
+      .grid-2 { grid-template-columns: 1.35fr .75fr; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    }
 
-.positive { color: var(--green); }
-.negative { color: var(--red); }
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
 
-.badge {
-  display: inline-block;
-  padding: 7px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 800;
-}
+    @media (min-width: 760px) {
+      .controls {
+        grid-template-columns: 1fr 1fr auto auto auto;
+        align-items: center;
+      }
+    }
 
-.bullish { background: #dcfce7; color: #166534; }
-.neutral { background: #fef3c7; color: #92400e; }
-.bearish { background: #fee2e2; color: #991b1b; }
+    input, select {
+      width: 100%;
+      padding: 14px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card-solid);
+      color: var(--text);
+      outline: none;
+      font-size: 16px;
+    }
 
-.small {
-  color: var(--muted);
-  font-size: 13px;
-}
+    button, .link-button {
+      border: none;
+      padding: 13px 15px;
+      border-radius: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .12s ease, opacity .12s ease;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
 
-.watch-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
+    button:active { transform: scale(.98); }
 
-canvas {
-  max-height: 330px;
-}
+    .primary { background: var(--primary); color: white; }
+    .secondary { background: #e5e7eb; color: #111827; }
+    .ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .danger { background: var(--red); color: white; }
+    .success { background: var(--green); color: white; }
 
-.range-buttons {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
+    .error {
+      color: var(--red);
+      font-weight: 800;
+      margin: 10px 0 0;
+      min-height: 20px;
+    }
 
-.range-buttons button {
-  background: #e5e7eb;
-  color: #111827;
-  padding: 9px 12px;
-}
+    .stat-card {
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-.disclaimer {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
-}
+    .stat-card span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-#error {
-  color: var(--red);
-  font-weight: 700;
-}
-</style>
+    .stat-card strong {
+      display: block;
+      font-size: clamp(23px, 5vw, 34px);
+      letter-spacing: -0.04em;
+    }
+
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .bullish { background: #dcfce7; color: #166534; }
+    .neutral { background: #fef3c7; color: #92400e; }
+    .bearish { background: #fee2e2; color: #991b1b; }
+
+    .tv-screen {
+      background: #050816;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      min-height: 420px;
+    }
+
+    .tv-label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 4;
+      background: rgba(220, 38, 38, .94);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+
+    .chart-shell {
+      height: 520px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--card-solid);
+    }
+
+    @media (max-width: 520px) {
+      .chart-shell { height: 430px; }
+      .tv-screen { min-height: 360px; }
+      .hero-top { flex-direction: column; }
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .detail-row strong {
+      color: var(--text);
+      text-align: right;
+    }
+
+    .score-ring {
+      width: 138px;
+      height: 138px;
+      border-radius: 999px;
+      margin: 10px auto;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--green) 0deg, var(--green) 0deg, #e5e7eb 0deg);
+      position: relative;
+    }
+
+    .score-ring::after {
+      content: "";
+      width: 104px;
+      height: 104px;
+      border-radius: 999px;
+      background: var(--card-solid);
+      position: absolute;
+    }
+
+    .score-inner {
+      z-index: 1;
+      text-align: center;
+    }
+
+    .score-inner strong {
+      font-size: 34px;
+      letter-spacing: -0.05em;
+    }
+
+    .score-inner span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    canvas {
+      max-height: 310px;
+    }
+
+    .portfolio-row, .watch-row, .news-item {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+    }
+
+    .watch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .watch-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .news-item a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .news-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 5px 0;
+      font-weight: 700;
+    }
+
+    .news-summary {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .mini-form {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    @media (min-width: 650px) {
+      .mini-form { grid-template-columns: 1fr 1fr 1fr auto; }
+    }
+
+    .disclaimer {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .footer-space { height: 20px; }
+
+    .muted { color: var(--muted); }
+    .hidden { display: none; }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+  </style>
 </head>
 
 <body>
 <div class="app">
-
-  <div class="header">
-    <h1>Stock Market Analyst</h1>
-    <p>Live/delayed stock dashboard with technical analysis, scoring, charts, and watchlist.</p>
-  </div>
-
-  <div class="card">
-    <div class="controls">
-      <input id="apiKey" placeholder="Paste Alpha Vantage API key here" />
-      <button class="secondary" onclick="saveApiKey()">Save Key</button>
-      <button class="secondary" onclick="toggleDark()">Dark Mode</button>
-    </div>
-    <p class="small">Get a free Alpha Vantage API key, paste it above, then search a ticker.</p>
-  </div>
-
-  <div class="card">
-    <div class="controls">
-      <input id="tickerInput" placeholder="Enter ticker: AAPL, TSLA, NVDA..." />
-      <button class="primary" onclick="loadStock()">Analyze</button>
-      <button class="secondary" onclick="addToWatchlist()">+ Watchlist</button>
-    </div>
-    <p id="error"></p>
-  </div>
-
-  <div class="grid grid-3">
-    <div class="card stat">
-      <span>Current Price</span>
-      <strong id="price">--</strong>
-    </div>
-    <div class="card stat">
-      <span>Daily Change</span>
-      <strong id="change">--</strong>
-    </div>
-    <div class="card stat">
-      <span>Analyst Score</span>
-      <strong id="score">--</strong>
-    </div>
-  </div>
-
-  <div class="grid grid-2">
-    <div class="card">
-      <h3>Price Chart</h3>
-      <div class="range-buttons">
-        <button onclick="setRange('1M')">1M</button>
-        <button onclick="setRange('6M')">6M</button>
-        <button onclick="setRange('1Y')">1Y</button>
+  <section class="hero">
+    <div class="hero-top">
+      <div>
+        <h1>Premium Stock Market Analyst</h1>
+        <p>Live quotes, TradingView charts, market TV, latest news, technical scoring, watchlists, and portfolio tracking in one GitHub Pages file.</p>
       </div>
-      <canvas id="priceChart"></canvas>
+      <div class="live-pill"><span class="dot"></span> LIVE DASHBOARD</div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:14px;">
+    <h3 class="section-title">Setup & Search</h3>
+    <div class="controls">
+      <input id="apiKeyInput" placeholder="Paste Finnhub API key" />
+      <input id="tickerInput" placeholder="Ticker: AAPL, TSLA, NVDA..." />
+      <button class="primary" onclick="loadStock()">Analyze</button>
+      <button class="secondary" onclick="saveApiKey()">Save Key</button>
+      <button class="ghost" onclick="toggleTheme()">Dark/Light</button>
+    </div>
+    <p class="muted" style="font-size:13px;margin-bottom:0;">
+      Free Finnhub key goes in the first box. TradingView chart loads without an API key.
+    </p>
+    <p id="errorBox" class="error"></p>
+  </section>
+
+  <section class="grid grid-4" style="margin-bottom:14px;">
+    <div class="card stat-card">
+      <span>Current Price</span>
+      <strong id="priceBox">--</strong>
+      <small id="priceTime" class="muted">Waiting for data</small>
+    </div>
+    <div class="card stat-card">
+      <span>Daily Change</span>
+      <strong id="changeBox">--</strong>
+      <small id="percentBox" class="muted">--</small>
+    </div>
+    <div class="card stat-card">
+      <span>Analyst Score</span>
+      <strong id="scoreBox">--</strong>
+      <small id="signalText" class="muted">Neutral</small>
+    </div>
+    <div class="card stat-card">
+      <span>Market Status</span>
+      <strong id="statusBox">--</strong>
+      <small class="muted">Auto refresh every 60 sec</small>
+    </div>
+  </section>
+
+  <section class="grid grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <h3 class="section-title">Live TradingView Chart <span id="chartTicker" class="badge neutral">NASDAQ:AAPL</span></h3>
+      <div id="tradingviewChart" class="chart-shell"></div>
     </div>
 
     <div class="card">
-      <h3>Stock Overview</h3>
-      <p><strong>Ticker:</strong> <span id="tickerName">--</span></p>
-      <p><strong>Previous Close:</strong> <span id="prevClose">--</span></p>
-      <p><strong>Volume:</strong> <span id="volume">--</span></p>
-      <p><strong>Market Cap:</strong> <span id="marketCap">--</span></p>
-      <p><strong>52 Week High:</strong> <span id="high52">--</span></p>
-      <p><strong>52 Week Low:</strong> <span id="low52">--</span></p>
+      <h3 class="section-title">Market TV</h3>
+      <div class="tv-screen">
+        <div class="tv-label">MARKET TV</div>
+        <div id="marketOverviewWidget"></div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="grid grid-2">
+  <section class="grid grid-2" style="margin-bottom:14px;">
     <div class="card">
-      <h3>Technical Analysis</h3>
-      <p><strong>Signal:</strong> <span id="signal" class="badge neutral">--</span></p>
-      <p><strong>RSI:</strong> <span id="rsi">--</span></p>
-      <p><strong>20-Day MA:</strong> <span id="ma20">--</span></p>
-      <p><strong>50-Day MA:</strong> <span id="ma50">--</span></p>
-      <p><strong>Support:</strong> <span id="support">--</span></p>
-      <p><strong>Resistance:</strong> <span id="resistance">--</span></p>
+      <h3 class="section-title">Stock Overview</h3>
+      <div class="detail-list">
+        <div class="detail-row"><span>Ticker</span><strong id="overviewTicker">--</strong></div>
+        <div class="detail-row"><span>Open</span><strong id="openBox">--</strong></div>
+        <div class="detail-row"><span>High</span><strong id="highBox">--</strong></div>
+        <div class="detail-row"><span>Low</span><strong id="lowBox">--</strong></div>
+        <div class="detail-row"><span>Previous Close</span><strong id="prevCloseBox">--</strong></div>
+        <div class="detail-row"><span>Market Cap</span><strong id="marketCapBox">--</strong></div>
+        <div class="detail-row"><span>Exchange</span><strong id="exchangeBox">--</strong></div>
+      </div>
+      <div class="pill-row" style="margin-top:14px;">
+        <span class="pill">Quote: Finnhub</span>
+        <span class="pill">Chart: TradingView</span>
+        <span class="pill">News: Finnhub</span>
+      </div>
     </div>
 
     <div class="card">
-      <h3>Risk Analysis</h3>
-      <p><strong>Trend Score:</strong> <span id="trendScore">--</span></p>
-      <p><strong>Momentum Score:</strong> <span id="momentumScore">--</span></p>
-      <p><strong>Volatility Risk:</strong> <span id="riskLevel">--</span></p>
-      <p><strong>Volume Confirmation:</strong> <span id="volumeConfirm">--</span></p>
-      <canvas id="volumeChart"></canvas>
+      <h3 class="section-title">AI-Style Analyst Score</h3>
+      <div class="score-ring" id="scoreRing">
+        <div class="score-inner">
+          <strong id="scoreRingText">--</strong>
+          <span>OUT OF 100</span>
+        </div>
+      </div>
+      <p style="text-align:center;"><span id="signalBadge" class="badge neutral">Neutral</span></p>
+      <div class="detail-list">
+        <div class="detail-row"><span>Trend score</span><strong id="trendScoreBox">--</strong></div>
+        <div class="detail-row"><span>Momentum score</span><strong id="momentumScoreBox">--</strong></div>
+        <div class="detail-row"><span>Volatility risk</span><strong id="riskBox">--</strong></div>
+        <div class="detail-row"><span>Educational signal</span><strong id="eduSignalBox">--</strong></div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <h3>Watchlist</h3>
-    <div id="watchlist"></div>
-  </div>
+  <section class="grid grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <h3 class="section-title">Local Performance Chart</h3>
+      <canvas id="localPriceChart"></canvas>
+      <p class="muted" style="font-size:12px;">This uses simulated intraday points around the latest live price so the card can move between API updates.</p>
+    </div>
+    <div class="card">
+      <h3 class="section-title">Volume / Momentum</h3>
+      <canvas id="momentumChart"></canvas>
+    </div>
+  </section>
 
-  <div class="card disclaimer">
-    <strong>Educational disclaimer:</strong> This website is for learning and informational purposes only.
-    It is not financial advice, investment advice, or a recommendation to buy or sell any stock.
-    Always do your own research or speak with a licensed financial professional.
-  </div>
+  <section class="grid grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <h3 class="section-title">Latest News</h3>
+      <div id="newsBox">
+        <p class="muted">Search a ticker to load the latest company news.</p>
+      </div>
+    </div>
 
+    <div class="card">
+      <h3 class="section-title">Watchlist</h3>
+      <div class="controls" style="grid-template-columns:1fr auto;margin-bottom:10px;">
+        <input id="watchInput" placeholder="Add ticker to watchlist" />
+        <button class="primary" onclick="addWatchlist()">Add</button>
+      </div>
+      <div id="watchlistBox"></div>
+    </div>
+  </section>
+
+  <section class="grid grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <h3 class="section-title">Portfolio Tracker</h3>
+      <div class="mini-form">
+        <input id="portfolioTicker" placeholder="Ticker" />
+        <input id="portfolioShares" type="number" placeholder="Shares" />
+        <input id="portfolioCost" type="number" placeholder="Avg cost" />
+        <button class="success" onclick="addPortfolio()">Add</button>
+      </div>
+      <div id="portfolioBox"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">Stock Comparison</h3>
+      <div class="controls" style="grid-template-columns:1fr 1fr auto;margin-bottom:10px;">
+        <input id="compareA" placeholder="AAPL" />
+        <input id="compareB" placeholder="MSFT" />
+        <button class="primary" onclick="compareStocks()">Compare</button>
+      </div>
+      <div id="compareBox" class="detail-list">
+        <p class="muted">Compare two tickers using Finnhub quote data.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card disclaimer">
+    <strong>Educational disclaimer:</strong> This site is for learning and informational purposes only. It is not financial advice, investment advice, or a recommendation to buy or sell securities. Market data may be delayed or limited by API plans. Always verify information with official sources or a licensed financial professional.
+  </section>
+
+  <div class="footer-space"></div>
 </div>
 
 <script>
-let apiKey = localStorage.getItem("stockApiKey") || "";
-let currentTicker = "AAPL";
-let currentRange = "6M";
-let dailyData = [];
-let priceChart, volumeChart;
+/*
+  PREMIUM STOCK MARKET ANALYST
+  Works as a single index.html file on GitHub Pages.
 
-document.getElementById("apiKey").value = apiKey;
+  APIs used:
+  - Finnhub quote endpoint for live/delayed stock price
+  - Finnhub company profile endpoint for market cap/exchange/company details
+  - Finnhub company news endpoint for recent news
+  - TradingView embedded widgets for live interactive charts and market overview
 
-function saveApiKey() {
-  apiKey = document.getElementById("apiKey").value.trim();
-  localStorage.setItem("stockApiKey", apiKey);
-  alert("API key saved.");
-}
+  Important:
+  - You need a free Finnhub API key.
+  - Paste the key into the website, then click Save Key.
+  - The key is stored only in your browser using localStorage.
+*/
 
-function toggleDark() {
-  document.body.classList.toggle("dark");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-}
+let FINNHUB_KEY = localStorage.getItem("finnhub_api_key") || "";
+let currentTicker = localStorage.getItem("last_ticker") || "AAPL";
+let currentPrice = 0;
+let localPriceChart = null;
+let momentumChart = null;
+let autoRefreshTimer = null;
+let lastSimulatedPoints = [];
 
-if (localStorage.getItem("darkMode") === "true") {
+const apiKeyInput = document.getElementById("apiKeyInput");
+const tickerInput = document.getElementById("tickerInput");
+apiKeyInput.value = FINNHUB_KEY;
+tickerInput.value = currentTicker;
+
+if (localStorage.getItem("premium_dark_mode") === "true") {
   document.body.classList.add("dark");
 }
 
-function formatMoney(num) {
-  if (!num || isNaN(num)) return "--";
-  return "$" + Number(num).toFixed(2);
+function setError(message) {
+  document.getElementById("errorBox").textContent = message || "";
 }
 
-function formatLarge(num) {
-  if (!num || isNaN(num)) return "--";
-  num = Number(num);
-  if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
-  if (num >= 1e9) return "$" + (num / 1e9).toFixed(2) + "B";
-  if (num >= 1e6) return "$" + (num / 1e6).toFixed(2) + "M";
-  return "$" + num.toLocaleString();
+function money(value) {
+  if (value === null || value === undefined || isNaN(Number(value))) return "--";
+  return "$" + Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-async function fetchJSON(url) {
-  const res = await fetch(url);
-  return await res.json();
+function compactMoney(value) {
+  const n = Number(value);
+  if (!n || isNaN(n)) return "--";
+  if (n >= 1e12) return "$" + (n / 1e12).toFixed(2) + "T";
+  if (n >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
+  return money(n);
 }
 
-async function loadStock(tickerFromWatchlist) {
-  document.getElementById("error").innerText = "";
+function percent(value) {
+  if (value === null || value === undefined || isNaN(Number(value))) return "--";
+  return Number(value).toFixed(2) + "%";
+}
 
-  if (!apiKey) {
-    document.getElementById("error").innerText = "Please paste and save your Alpha Vantage API key first.";
+function cleanTicker(ticker) {
+  return (ticker || "").trim().toUpperCase().replace(/[^A-Z.\-]/g, "");
+}
+
+function tvSymbol(ticker) {
+  // For most US stocks, TradingView uses NASDAQ: or NYSE:. NASDAQ default works for many tech tickers.
+  // Users can still view the chart, even if they need to manually select an exchange inside TradingView.
+  return "NASDAQ:" + cleanTicker(ticker);
+}
+
+function saveApiKey() {
+  FINNHUB_KEY = apiKeyInput.value.trim();
+  localStorage.setItem("finnhub_api_key", FINNHUB_KEY);
+  setError("");
+  alert("Finnhub API key saved.");
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("premium_dark_mode", document.body.classList.contains("dark"));
+  renderTradingViewChart(currentTicker);
+  renderMarketOverview();
+}
+
+async function fetchFinnhub(path) {
+  if (!FINNHUB_KEY) throw new Error("Please paste and save your Finnhub API key first.");
+  const separator = path.includes("?") ? "&" : "?";
+  const url = "https://finnhub.io/api/v1/" + path + separator + "token=" + encodeURIComponent(FINNHUB_KEY);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Finnhub request failed. Check your API key or try again later.");
+  const data = await response.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+function getDateString(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().slice(0, 10);
+}
+
+async function loadStock(tickerOverride) {
+  setError("");
+  const ticker = cleanTicker(tickerOverride || tickerInput.value || currentTicker || "AAPL");
+  if (!ticker) {
+    setError("Please enter a ticker.");
     return;
   }
 
-  currentTicker = (tickerFromWatchlist || document.getElementById("tickerInput").value || "AAPL").toUpperCase().trim();
-  document.getElementById("tickerInput").value = currentTicker;
+  currentTicker = ticker;
+  tickerInput.value = ticker;
+  localStorage.setItem("last_ticker", ticker);
 
   try {
-    const quoteURL = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${currentTicker}&apikey=${apiKey}`;
-    const dailyURL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${currentTicker}&outputsize=full&apikey=${apiKey}`;
-    const overviewURL = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${currentTicker}&apikey=${apiKey}`;
+    document.getElementById("statusBox").textContent = "Loading";
+    renderTradingViewChart(ticker);
 
-    const [quote, daily, overview] = await Promise.all([
-      fetchJSON(quoteURL),
-      fetchJSON(dailyURL),
-      fetchJSON(overviewURL)
+    const [quote, profile, news] = await Promise.all([
+      fetchFinnhub("quote?symbol=" + encodeURIComponent(ticker)),
+      fetchFinnhub("stock/profile2?symbol=" + encodeURIComponent(ticker)),
+      fetchFinnhub("company-news?symbol=" + encodeURIComponent(ticker) + "&from=" + getDateString(14) + "&to=" + getDateString(0))
     ]);
 
-    if (quote.Note || daily.Note || overview.Note) {
-      throw new Error("API limit reached. Try again later or use fewer searches.");
+    if (!quote || quote.c === 0) {
+      throw new Error("Ticker not found or quote data unavailable.");
     }
 
-    if (!quote["Global Quote"] || !daily["Time Series (Daily)"]) {
-      throw new Error("Ticker not found or API returned no data.");
-    }
+    currentPrice = Number(quote.c);
+    updateQuoteUI(ticker, quote, profile || {});
+    updateScoreUI(quote);
+    renderNews(news || []);
+    renderLocalCharts(quote);
+    renderWatchlist();
+    renderPortfolio();
 
-    updateOverview(quote["Global Quote"], overview);
-    dailyData = parseDailyData(daily["Time Series (Daily)"]);
-    analyzeStock();
-    renderCharts();
-  } catch (err) {
-    document.getElementById("error").innerText = err.message;
+    document.getElementById("statusBox").textContent = "Live";
+    startAutoRefresh();
+  } catch (error) {
+    setError(error.message);
+    document.getElementById("statusBox").textContent = "Error";
   }
 }
 
-function updateOverview(q, overview) {
-  const price = Number(q["05. price"]);
-  const change = Number(q["09. change"]);
-  const percent = q["10. change percent"];
+function updateQuoteUI(ticker, q, profile) {
+  const change = Number(q.d);
+  const changePercent = Number(q.dp);
 
-  document.getElementById("tickerName").innerText = currentTicker;
-  document.getElementById("price").innerText = formatMoney(price);
+  document.getElementById("priceBox").textContent = money(q.c);
+  document.getElementById("changeBox").textContent = money(change);
+  document.getElementById("changeBox").className = change >= 0 ? "positive" : "negative";
+  document.getElementById("percentBox").textContent = percent(changePercent);
+  document.getElementById("percentBox").className = changePercent >= 0 ? "positive" : "negative";
 
-  const changeEl = document.getElementById("change");
-  changeEl.innerText = `${formatMoney(change)} (${percent})`;
-  changeEl.className = change >= 0 ? "positive" : "negative";
+  document.getElementById("priceTime").textContent = q.t ? "Updated " + new Date(q.t * 1000).toLocaleTimeString() : "Updated now";
 
-  document.getElementById("prevClose").innerText = formatMoney(q["08. previous close"]);
-  document.getElementById("volume").innerText = Number(q["06. volume"]).toLocaleString();
-
-  document.getElementById("marketCap").innerText = formatLarge(overview.MarketCapitalization);
-  document.getElementById("high52").innerText = formatMoney(overview["52WeekHigh"]);
-  document.getElementById("low52").innerText = formatMoney(overview["52WeekLow"]);
+  document.getElementById("overviewTicker").textContent = ticker;
+  document.getElementById("openBox").textContent = money(q.o);
+  document.getElementById("highBox").textContent = money(q.h);
+  document.getElementById("lowBox").textContent = money(q.l);
+  document.getElementById("prevCloseBox").textContent = money(q.pc);
+  document.getElementById("marketCapBox").textContent = profile.marketCapitalization ? compactMoney(profile.marketCapitalization * 1000000) : "--";
+  document.getElementById("exchangeBox").textContent = profile.exchange || "--";
 }
 
-function parseDailyData(raw) {
-  return Object.keys(raw)
-    .map(date => ({
-      date,
-      close: Number(raw[date]["4. close"]),
-      high: Number(raw[date]["2. high"]),
-      low: Number(raw[date]["3. low"]),
-      volume: Number(raw[date]["5. volume"])
-    }))
-    .reverse();
-}
+function updateScoreUI(q) {
+  const current = Number(q.c);
+  const open = Number(q.o);
+  const high = Number(q.h);
+  const low = Number(q.l);
+  const prev = Number(q.pc);
+  const dayChangePct = Number(q.dp);
 
-function average(arr) {
-  return arr.reduce((a,b) => a + b, 0) / arr.length;
-}
+  let trendScore = 0;
+  if (current > prev) trendScore += 25;
+  if (current > open) trendScore += 20;
+  if (dayChangePct > 0) trendScore += 15;
+  trendScore = Math.min(60, trendScore);
 
-function movingAverage(data, period) {
-  return data.map((_, i) => {
-    if (i < period - 1) return null;
-    return average(data.slice(i - period + 1, i + 1).map(d => d.close));
-  });
-}
+  let momentumScore = 15;
+  if (dayChangePct > 1) momentumScore = 25;
+  else if (dayChangePct > 0) momentumScore = 20;
+  else if (dayChangePct < -1) momentumScore = 8;
 
-function calculateRSI(data, period = 14) {
-  if (data.length < period + 1) return 50;
+  const range = high - low;
+  const volatilityPct = current ? (range / current) * 100 : 0;
+  let risk = "Low";
+  let riskPenalty = 0;
+  if (volatilityPct > 6) { risk = "High"; riskPenalty = 15; }
+  else if (volatilityPct > 3) { risk = "Medium"; riskPenalty = 7; }
 
-  let gains = 0, losses = 0;
-  const recent = data.slice(-period - 1);
-
-  for (let i = 1; i < recent.length; i++) {
-    const diff = recent[i].close - recent[i - 1].close;
-    if (diff >= 0) gains += diff;
-    else losses -= diff;
-  }
-
-  if (losses === 0) return 100;
-  const rs = gains / losses;
-  return 100 - (100 / (1 + rs));
-}
-
-function analyzeStock() {
-  const closes = dailyData.map(d => d.close);
-  const latest = dailyData[dailyData.length - 1];
-  const ma20Arr = movingAverage(dailyData, 20);
-  const ma50Arr = movingAverage(dailyData, 50);
-
-  const ma20 = ma20Arr[ma20Arr.length - 1];
-  const ma50 = ma50Arr[ma50Arr.length - 1];
-  const rsi = calculateRSI(dailyData);
-
-  const recent = dailyData.slice(-30);
-  const support = Math.min(...recent.map(d => d.low));
-  const resistance = Math.max(...recent.map(d => d.high));
-
-  const avgVolume = average(recent.map(d => d.volume));
-  const volumeConfirm = latest.volume > avgVolume ? "Strong volume" : "Weak/normal volume";
-
-  let trendScore = latest.close > ma20 ? 30 : 10;
-  trendScore += latest.close > ma50 ? 30 : 10;
-
-  let momentumScore = rsi > 50 && rsi < 70 ? 25 : rsi >= 70 ? 15 : 10;
-  let volumeScore = latest.volume > avgVolume ? 15 : 8;
-
-  const totalScore = Math.min(100, trendScore + momentumScore + volumeScore);
+  let score = Math.round(trendScore + momentumScore + 15 - riskPenalty);
+  score = Math.max(0, Math.min(100, score));
 
   let signal = "Neutral";
   let signalClass = "neutral";
+  let edu = "Hold / Watch";
 
-  if (totalScore >= 70) {
+  if (score >= 70) {
     signal = "Bullish";
     signalClass = "bullish";
-  } else if (totalScore <= 45) {
+    edu = "Educational signal: strong watchlist candidate";
+  } else if (score <= 45) {
     signal = "Bearish";
     signalClass = "bearish";
+    edu = "Educational signal: higher caution";
   }
 
-  const volatility = ((resistance - support) / latest.close) * 100;
-  const risk = volatility > 20 ? "High" : volatility > 10 ? "Medium" : "Low";
+  document.getElementById("scoreBox").textContent = score + "/100";
+  document.getElementById("scoreRingText").textContent = score;
+  document.getElementById("signalText").textContent = signal;
+  document.getElementById("signalBadge").textContent = signal;
+  document.getElementById("signalBadge").className = "badge " + signalClass;
 
-  document.getElementById("score").innerText = totalScore + "/100";
-  document.getElementById("rsi").innerText = rsi.toFixed(1);
-  document.getElementById("ma20").innerText = formatMoney(ma20);
-  document.getElementById("ma50").innerText = formatMoney(ma50);
-  document.getElementById("support").innerText = formatMoney(support);
-  document.getElementById("resistance").innerText = formatMoney(resistance);
-  document.getElementById("trendScore").innerText = trendScore + "/60";
-  document.getElementById("momentumScore").innerText = momentumScore + "/25";
-  document.getElementById("riskLevel").innerText = risk;
-  document.getElementById("volumeConfirm").innerText = volumeConfirm;
+  document.getElementById("trendScoreBox").textContent = trendScore + "/60";
+  document.getElementById("momentumScoreBox").textContent = momentumScore + "/25";
+  document.getElementById("riskBox").textContent = risk + " (" + volatilityPct.toFixed(2) + "% intraday range)";
+  document.getElementById("eduSignalBox").textContent = edu;
 
-  const signalEl = document.getElementById("signal");
-  signalEl.innerText = signal;
-  signalEl.className = "badge " + signalClass;
+  const degrees = (score / 100) * 360;
+  const ringColor = signal === "Bullish" ? "var(--green)" : signal === "Bearish" ? "var(--red)" : "var(--yellow)";
+  document.getElementById("scoreRing").style.background =
+    `conic-gradient(${ringColor} 0deg, ${ringColor} ${degrees}deg, #e5e7eb ${degrees}deg)`;
 }
 
-function setRange(range) {
-  currentRange = range;
-  renderCharts();
+function renderTradingViewChart(ticker) {
+  const container = document.getElementById("tradingviewChart");
+  const symbol = tvSymbol(ticker);
+  document.getElementById("chartTicker").textContent = symbol;
+
+  container.innerHTML = "";
+
+  const widget = document.createElement("div");
+  widget.className = "tradingview-widget-container";
+  widget.style.height = "100%";
+  widget.style.width = "100%";
+
+  const inner = document.createElement("div");
+  inner.className = "tradingview-widget-container__widget";
+  inner.style.height = "100%";
+  inner.style.width = "100%";
+
+  const script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+  script.async = true;
+  script.innerHTML = JSON.stringify({
+    autosize: true,
+    symbol: symbol,
+    interval: "15",
+    timezone: "America/Chicago",
+    theme: document.body.classList.contains("dark") ? "dark" : "light",
+    style: "1",
+    locale: "en",
+    enable_publishing: false,
+    allow_symbol_change: true,
+    calendar: false,
+    support_host: "https://www.tradingview.com"
+  });
+
+  widget.appendChild(inner);
+  widget.appendChild(script);
+  container.appendChild(widget);
 }
 
-function getRangeData() {
-  let count = 126;
-  if (currentRange === "1M") count = 22;
-  if (currentRange === "6M") count = 126;
-  if (currentRange === "1Y") count = 252;
-  return dailyData.slice(-count);
+function renderMarketOverview() {
+  const container = document.getElementById("marketOverviewWidget");
+  container.innerHTML = "";
+
+  const widget = document.createElement("div");
+  widget.className = "tradingview-widget-container";
+  widget.style.height = "100%";
+  widget.style.width = "100%";
+
+  const inner = document.createElement("div");
+  inner.className = "tradingview-widget-container__widget";
+  inner.style.height = "100%";
+  inner.style.width = "100%";
+
+  const script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js";
+  script.async = true;
+  script.innerHTML = JSON.stringify({
+    colorTheme: document.body.classList.contains("dark") ? "dark" : "light",
+    dateRange: "1D",
+    showChart: true,
+    locale: "en",
+    width: "100%",
+    height: "100%",
+    largeChartUrl: "",
+    isTransparent: false,
+    showSymbolLogo: true,
+    showFloatingTooltip: true,
+    tabs: [
+      {
+        title: "Indexes",
+        symbols: [
+          { s: "FOREXCOM:SPXUSD", d: "S&P 500" },
+          { s: "NASDAQ:NDX", d: "Nasdaq 100" },
+          { s: "DJ:DJI", d: "Dow Jones" },
+          { s: "TVC:RUT", d: "Russell 2000" },
+          { s: "CBOE:VIX", d: "VIX" }
+        ]
+      },
+      {
+        title: "Mega Cap",
+        symbols: [
+          { s: "NASDAQ:AAPL", d: "Apple" },
+          { s: "NASDAQ:MSFT", d: "Microsoft" },
+          { s: "NASDAQ:NVDA", d: "Nvidia" },
+          { s: "NASDAQ:TSLA", d: "Tesla" },
+          { s: "NASDAQ:AMZN", d: "Amazon" }
+        ]
+      }
+    ]
+  });
+
+  widget.appendChild(inner);
+  widget.appendChild(script);
+  container.appendChild(widget);
 }
 
-function renderCharts() {
-  const data = getRangeData();
-  const labels = data.map(d => d.date);
-  const prices = data.map(d => d.close);
-  const volumes = data.map(d => d.volume);
-  const ma20 = movingAverage(data, 20);
-  const ma50 = movingAverage(data, 50);
+function renderNews(news) {
+  const box = document.getElementById("newsBox");
 
-  if (priceChart) priceChart.destroy();
-  priceChart = new Chart(document.getElementById("priceChart"), {
+  const filtered = (news || [])
+    .filter(item => item.headline && item.url)
+    .slice(0, 5);
+
+  if (filtered.length === 0) {
+    box.innerHTML = "<p class='muted'>No recent news found for this ticker.</p>";
+    return;
+  }
+
+  box.innerHTML = filtered.map(item => {
+    const date = item.datetime ? new Date(item.datetime * 1000).toLocaleDateString() : "";
+    const source = item.source || "Market news";
+    const summary = item.summary || "Open the article to read more.";
+    return `
+      <article class="news-item">
+        <a href="${item.url}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.headline)}</a>
+        <div class="news-meta">${escapeHTML(source)} · ${date}</div>
+        <p class="news-summary">${escapeHTML(summary).slice(0, 180)}${summary.length > 180 ? "..." : ""}</p>
+      </article>
+    `;
+  }).join("");
+}
+
+function escapeHTML(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderLocalCharts(q) {
+  const base = Number(q.c);
+  const change = Number(q.d || 0);
+  const high = Number(q.h || base);
+  const low = Number(q.l || base);
+
+  const labels = [];
+  const points = [];
+  const momentum = [];
+
+  for (let i = 29; i >= 0; i--) {
+    labels.push(i === 0 ? "Now" : "-" + i + "m");
+    const wave = Math.sin(i / 3) * (Math.abs(change) || 0.5);
+    const noise = (Math.random() - 0.5) * Math.max(0.2, base * 0.002);
+    const price = Math.max(low * 0.995, Math.min(high * 1.005, base - wave + noise));
+    points.push(Number(price.toFixed(2)));
+    momentum.push(Number(((price - base) / base * 100).toFixed(2)));
+  }
+
+  lastSimulatedPoints = points;
+
+  if (localPriceChart) localPriceChart.destroy();
+  localPriceChart = new Chart(document.getElementById("localPriceChart"), {
     type: "line",
     data: {
       labels,
-      datasets: [
-        { label: "Close", data: prices, borderWidth: 3, tension: .25 },
-        { label: "20-Day MA", data: ma20, borderWidth: 2, tension: .25 },
-        { label: "50-Day MA", data: ma50, borderWidth: 2, tension: .25 }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: true } },
-      scales: { x: { ticks: { maxTicksLimit: 6 } } }
-    }
-  });
-
-  if (volumeChart) volumeChart.destroy();
-  volumeChart = new Chart(document.getElementById("volumeChart"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{ label: "Volume", data: volumes }]
+      datasets: [{
+        label: currentTicker + " simulated live movement",
+        data: points,
+        borderWidth: 3,
+        tension: 0.35,
+        fill: true
+      }]
     },
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { maxTicksLimit: 5 } } }
+      scales: { x: { ticks: { maxTicksLimit: 6 } } }
+    }
+  });
+
+  if (momentumChart) momentumChart.destroy();
+  momentumChart = new Chart(document.getElementById("momentumChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Momentum %",
+        data: momentum,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { x: { ticks: { maxTicksLimit: 6 } } }
     }
   });
 }
 
 function getWatchlist() {
-  return JSON.parse(localStorage.getItem("watchlist")) || [];
+  return JSON.parse(localStorage.getItem("premium_watchlist") || "[]");
 }
 
 function saveWatchlist(list) {
-  localStorage.setItem("watchlist", JSON.stringify(list));
+  localStorage.setItem("premium_watchlist", JSON.stringify(list));
+}
+
+function addWatchlist() {
+  const ticker = cleanTicker(document.getElementById("watchInput").value || tickerInput.value || currentTicker);
+  if (!ticker) return;
+
+  const list = getWatchlist();
+  if (!list.includes(ticker)) list.push(ticker);
+  saveWatchlist(list);
+  document.getElementById("watchInput").value = "";
   renderWatchlist();
 }
 
-function addToWatchlist() {
-  const ticker = (document.getElementById("tickerInput").value || currentTicker).toUpperCase().trim();
-  if (!ticker) return;
-
-  let list = getWatchlist();
-  if (!list.includes(ticker)) list.push(ticker);
-  saveWatchlist(list);
-}
-
-function removeFromWatchlist(ticker) {
+function removeWatchlist(ticker) {
   saveWatchlist(getWatchlist().filter(t => t !== ticker));
+  renderWatchlist();
 }
 
 function renderWatchlist() {
-  const box = document.getElementById("watchlist");
+  const box = document.getElementById("watchlistBox");
   const list = getWatchlist();
 
   if (list.length === 0) {
-    box.innerHTML = "<p class='small'>No stocks saved yet.</p>";
+    box.innerHTML = "<p class='muted'>No saved tickers yet.</p>";
     return;
   }
 
   box.innerHTML = list.map(ticker => `
-    <div class="watch-item">
-      <button class="secondary" onclick="loadStock('${ticker}')">${ticker}</button>
-      <button class="danger" onclick="removeFromWatchlist('${ticker}')">Delete</button>
+    <div class="watch-row">
+      <strong>${ticker}</strong>
+      <div class="watch-actions">
+        <button class="secondary" onclick="loadStock('${ticker}')">Open</button>
+        <button class="danger" onclick="removeWatchlist('${ticker}')">Delete</button>
+      </div>
     </div>
   `).join("");
 }
 
+function getPortfolio() {
+  return JSON.parse(localStorage.getItem("premium_portfolio") || "[]");
+}
+
+function savePortfolio(items) {
+  localStorage.setItem("premium_portfolio", JSON.stringify(items));
+}
+
+function addPortfolio() {
+  const ticker = cleanTicker(document.getElementById("portfolioTicker").value);
+  const shares = Number(document.getElementById("portfolioShares").value);
+  const cost = Number(document.getElementById("portfolioCost").value);
+
+  if (!ticker || !shares || !cost) {
+    alert("Enter ticker, shares, and average cost.");
+    return;
+  }
+
+  const items = getPortfolio();
+  items.push({ ticker, shares, cost });
+  savePortfolio(items);
+
+  document.getElementById("portfolioTicker").value = "";
+  document.getElementById("portfolioShares").value = "";
+  document.getElementById("portfolioCost").value = "";
+
+  renderPortfolio();
+}
+
+function removePortfolio(index) {
+  const items = getPortfolio();
+  items.splice(index, 1);
+  savePortfolio(items);
+  renderPortfolio();
+}
+
+function renderPortfolio() {
+  const box = document.getElementById("portfolioBox");
+  const items = getPortfolio();
+
+  if (items.length === 0) {
+    box.innerHTML = "<p class='muted'>No portfolio positions added yet.</p>";
+    return;
+  }
+
+  box.innerHTML = items.map((item, index) => {
+    const isCurrent = item.ticker === currentTicker && currentPrice > 0;
+    const marketValue = isCurrent ? currentPrice * item.shares : null;
+    const costValue = item.cost * item.shares;
+    const gain = marketValue !== null ? marketValue - costValue : null;
+
+    return `
+      <div class="portfolio-row">
+        <strong>${item.ticker}</strong>
+        <div class="muted" style="font-size:13px;">
+          ${item.shares} shares · Avg cost ${money(item.cost)}
+        </div>
+        <div style="margin-top:6px;">
+          ${isCurrent ? `Value: <strong>${money(marketValue)}</strong> · P/L: <strong class="${gain >= 0 ? "positive" : "negative"}">${money(gain)}</strong>` : `<span class="muted">Open this ticker to calculate live value.</span>`}
+        </div>
+        <button class="danger" style="margin-top:8px;" onclick="removePortfolio(${index})">Delete</button>
+      </div>
+    `;
+  }).join("");
+}
+
+async function compareStocks() {
+  setError("");
+  const a = cleanTicker(document.getElementById("compareA").value || "AAPL");
+  const b = cleanTicker(document.getElementById("compareB").value || "MSFT");
+  const box = document.getElementById("compareBox");
+
+  try {
+    box.innerHTML = "<p class='muted'>Comparing...</p>";
+    const [qa, qb] = await Promise.all([
+      fetchFinnhub("quote?symbol=" + encodeURIComponent(a)),
+      fetchFinnhub("quote?symbol=" + encodeURIComponent(b))
+    ]);
+
+    box.innerHTML = `
+      <div class="detail-row"><span>${a} price</span><strong>${money(qa.c)}</strong></div>
+      <div class="detail-row"><span>${a} change</span><strong class="${qa.dp >= 0 ? "positive" : "negative"}">${percent(qa.dp)}</strong></div>
+      <div class="detail-row"><span>${b} price</span><strong>${money(qb.c)}</strong></div>
+      <div class="detail-row"><span>${b} change</span><strong class="${qb.dp >= 0 ? "positive" : "negative"}">${percent(qb.dp)}</strong></div>
+      <div class="detail-row"><span>Stronger today</span><strong>${Number(qa.dp) >= Number(qb.dp) ? a : b}</strong></div>
+    `;
+  } catch (error) {
+    box.innerHTML = "<p class='negative'>" + escapeHTML(error.message) + "</p>";
+  }
+}
+
+function startAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    if (FINNHUB_KEY && currentTicker) loadStock(currentTicker);
+  }, 60000);
+}
+
+/* Initialize the dashboard */
+renderMarketOverview();
+renderTradingViewChart(currentTicker);
 renderWatchlist();
+renderPortfolio();
+
+/* Load default ticker if user already saved an API key */
+if (FINNHUB_KEY) {
+  loadStock(currentTicker);
+}
 </script>
 </body>
 </html>
