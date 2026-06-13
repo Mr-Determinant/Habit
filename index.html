@@ -1,10 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Habit Tracker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Habit Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ef;
+      margin: 0;
+      padding: 30px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #4b7f52;
+    }
+
+    .add-habit {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #4b7f52;
+      color: white;
+      cursor: pointer;
+    }
+
+    .habit {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .habit-name {
+      font-weight: bold;
+    }
+
+    .streak {
+      font-size: 14px;
+      color: #777;
+    }
+
+    .delete {
+      background: #d9534f;
+      margin-left: 10px;
+    }
+
+    .done {
+      text-decoration: line-through;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <h1>My Habit Tracker</h1>
-    <p>If you can see this page, GitHub Pages is working!</p>
+
+    <div class="add-habit">
+      <input id="habitInput" type="text" placeholder="Add a new habit..." />
+      <button onclick="addHabit()">Add</button>
+    </div>
+
+    <div id="habitList"></div>
+  </div>
+
+  <script>
+    let habits = JSON.parse(localStorage.getItem("habits")) || [];
+
+    function saveHabits() {
+      localStorage.setItem("habits", JSON.stringify(habits));
+    }
+
+    function addHabit() {
+      const input = document.getElementById("habitInput");
+      const name = input.value.trim();
+
+      if (name === "") return;
+
+      habits.push({
+        name: name,
+        completed: false,
+        streak: 0,
+        lastCompleted: null
+      });
+
+      input.value = "";
+      saveHabits();
+      renderHabits();
+    }
+
+    function toggleHabit(index) {
+      const today = new Date().toDateString();
+      const habit = habits[index];
+
+      habit.completed = !habit.completed;
+
+      if (habit.completed && habit.lastCompleted !== today) {
+        habit.streak++;
+        habit.lastCompleted = today;
+      }
+
+      if (!habit.completed && habit.lastCompleted === today) {
+        habit.streak = Math.max(0, habit.streak - 1);
+        habit.lastCompleted = null;
+      }
+
+      saveHabits();
+      renderHabits();
+    }
+
+    function deleteHabit(index) {
+      habits.splice(index, 1);
+      saveHabits();
+      renderHabits();
+    }
+
+    function renderHabits() {
+      const list = document.getElementById("habitList");
+      list.innerHTML = "";
+
+      habits.forEach((habit, index) => {
+        const div = document.createElement("div");
+        div.className = "habit";
+
+        div.innerHTML = `
+          <div>
+            <div class="habit-name ${habit.completed ? "done" : ""}">
+              ${habit.name}
+            </div>
+            <div class="streak">🔥 Streak: ${habit.streak} day(s)</div>
+          </div>
+          <div>
+            <input type="checkbox" ${habit.completed ? "checked" : ""} onchange="toggleHabit(${index})" />
+            <button class="delete" onclick="deleteHabit(${index})">Delete</button>
+          </div>
+        `;
+
+        list.appendChild(div);
+      });
+    }
+
+    renderHabits();
+  </script>
 </body>
 </html>
